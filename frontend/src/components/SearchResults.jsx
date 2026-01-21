@@ -7,20 +7,51 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
   const [newsResults, setNewsResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(query);
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 10;
 
-  // Update local activeTab when prop changes
+  // Update local activeTab when prop changes and reset to page 1
   useEffect(() => {
     if (propActiveTab) {
       setActiveTab(propActiveTab);
+      setCurrentPage(1);
     }
   }, [propActiveTab]);
 
   useEffect(() => {
     if (query) {
       setSearchQuery(query);
+      setCurrentPage(1);
       fetchResults(query);
     }
   }, [query]);
+
+  const getPageResults = () => {
+    let results = [];
+    if (activeTab === 'web') {
+      results = webResults;
+    } else if (activeTab === 'images') {
+      results = imageResults;
+    } else if (activeTab === 'news') {
+      results = newsResults;
+    }
+    
+    const startIndex = (currentPage - 1) * resultsPerPage;
+    const endIndex = startIndex + resultsPerPage;
+    return results.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    let results = [];
+    if (activeTab === 'web') {
+      results = webResults;
+    } else if (activeTab === 'images') {
+      results = imageResults;
+    } else if (activeTab === 'news') {
+      results = newsResults;
+    }
+    return Math.ceil(results.length / resultsPerPage);
+  };
 
   const fetchResults = async (searchTerm) => {
     setLoading(true);
@@ -131,11 +162,14 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
 
   const renderWebResults = () => {
     if (loading) return <div className="loading">Searching...</div>;
-    if (!webResults.length) return <div className="loading">No results found</div>;
+    const pageResults = getPageResults();
+    if (pageResults.length === 0 && webResults.length === 0) {
+      return <div className="loading">No results found</div>;
+    }
 
-    return webResults.map((result, index) => (
+    return pageResults.map((result, index) => (
       <div key={index} className="web-result">
-        <div className="web-result-url">{result.domain || new URL(result.url).hostname}</div>
+        <div className="web-result-url">{result.domain || (result.url && new URL(result.url).hostname) || 'unknown'}</div>
         <a href={result.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
           {result.title}
         </a>
@@ -146,16 +180,19 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
 
   const renderImageResults = () => {
     if (loading) return <div className="loading">Loading images...</div>;
-    if (!imageResults.length) return <div className="loading">No images found</div>;
+    const pageResults = getPageResults();
+    if (pageResults.length === 0 && imageResults.length === 0) {
+      return <div className="loading">No images found</div>;
+    }
 
     return (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-        {imageResults.map((image, index) => (
+        {pageResults.map((image, index) => (
           <div key={index} style={{ borderRadius: '8px', overflow: 'hidden' }}>
             <img 
               src={image.thumbnail || image.url} 
               alt={image.title}
-              style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+              style={{ width: '100%', height: '150px', objectFit: 'cover', cursor: 'pointer' }}
               onClick={() => window.open(image.url, '_blank')}
             />
           </div>
@@ -166,9 +203,12 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
 
   const renderNewsResults = () => {
     if (loading) return <div className="loading">Loading news...</div>;
-    if (!newsResults.length) return <div className="loading">No news found</div>;
+    const pageResults = getPageResults();
+    if (pageResults.length === 0 && newsResults.length === 0) {
+      return <div className="loading">No news found</div>;
+    }
 
-    return newsResults.map((article, index) => (
+    return pageResults.map((article, index) => (
       <div key={index} className="web-result">
         <div className="web-result-url">{article.source}</div>
         <a href={article.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
@@ -240,6 +280,81 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
             {activeTab === 'images' && renderImageResults()}
             {activeTab === 'news' && renderNewsResults()}
           </div>
+
+          {/* Pagination Controls */}
+          {getTotalPages() > 1 && (
+            <div style={{
+              marginTop: '40px',
+              padding: '20px',
+              borderTop: '1px solid #e0e0e0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #0078d4',
+                  background: currentPage === 1 ? '#f0f0f0' : '#0078d4',
+                  color: currentPage === 1 ? '#999' : '#fff',
+                  borderRadius: '4px',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                ← Previous
+              </button>
+
+              {/* Page number input */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ color: '#333', fontSize: '14px' }}>Page:</label>
+                <input
+                  type="number"
+                  value={currentPage}
+                  onChange={(e) => {
+                    const page = parseInt(e.target.value) || 1;
+                    setCurrentPage(Math.max(1, Math.min(page, getTotalPages())));
+                  }}
+                  min="1"
+                  max={getTotalPages()}
+                  style={{
+                    width: '60px',
+                    padding: '6px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <span style={{ color: '#666', fontSize: '14px' }}>
+                  of {getTotalPages()}
+                </span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(Math.min(getTotalPages(), currentPage + 1))}
+                disabled={currentPage === getTotalPages()}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid #0078d4',
+                  background: currentPage === getTotalPages() ? '#f0f0f0' : '#0078d4',
+                  color: currentPage === getTotalPages() ? '#999' : '#fff',
+                  borderRadius: '4px',
+                  cursor: currentPage === getTotalPages() ? 'not-allowed' : 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                Next →
+              </button>
+
+              <span style={{ color: '#999', fontSize: '12px', marginLeft: '10px' }}>
+                Results per page: {resultsPerPage}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="sidebar">
