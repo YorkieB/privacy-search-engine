@@ -25,12 +25,16 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
   const fetchResults = async (searchTerm) => {
     setLoading(true);
     try {
-      // Fetch all three types of results
+      // Fetch all three types of results with count parameter for more results
       const [webResponse, imageResponse, newsResponse] = await Promise.all([
-        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`),
-        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}`),
-        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}`)
+        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}&count=20`),
+        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}&count=20`),
+        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}&count=20`)
       ]);
+
+      console.log('Web response status:', webResponse.status);
+      console.log('Image response status:', imageResponse.status);
+      console.log('News response status:', newsResponse.status);
 
       const [webData, imageData, newsData] = await Promise.all([
         webResponse.json(),
@@ -38,24 +42,79 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
         newsResponse.json()
       ]);
 
-      setWebResults(webData.results || []);
-      setImageResults(imageData.results || []);
-      setNewsResults(newsData.results || []);
+      console.log('Web results:', webData);
+      console.log('Image results:', imageData);
+      console.log('News results:', newsData);
+
+      setWebResults(webData.results || webData || []);
+      setImageResults(imageData.results || imageData || []);
+      setNewsResults(newsData.results || newsData || []);
     } catch (error) {
       console.error('Error fetching search results:', error);
-      // Set mock data for demonstration
+      // Provide more realistic mock data for demonstration
       setWebResults([
         {
-          title: 'Privacy Search - Secure Web Search',
-          url: 'https://example.com',
-          description: 'A privacy-focused search engine that does not track users or store personal information.',
+          title: 'Privacy-Focused Search Engines - A Complete Guide',
+          url: 'https://example.com/privacy-search',
+          description: 'Explore the best privacy-focused search engines that protect your personal information and don\'t track your searches.',
           domain: 'example.com'
         },
         {
-          title: 'How to Search the Web Privately',
-          url: 'https://guide.com',
-          description: 'Learn about privacy-focused search engines and techniques to search the web without being tracked.',
+          title: 'How to Search the Web Privately Without Being Tracked',
+          url: 'https://guide.com/private-search',
+          description: 'Learn techniques and tools to search the web without leaving a digital footprint. Includes best practices for anonymous searching.',
           domain: 'guide.com'
+        },
+        {
+          title: 'Why Privacy Matters in Online Search',
+          url: 'https://privacy.org/search-privacy',
+          description: 'Understanding the importance of search privacy and how to protect your data while browsing the internet.',
+          domain: 'privacy.org'
+        },
+        {
+          title: 'Brave Search - Privacy First Search Engine',
+          url: 'https://search.brave.com',
+          description: 'A privacy-centric search engine that offers fast, unbiased results without tracking or data collection.',
+          domain: 'search.brave.com'
+        },
+        {
+          title: 'DuckDuckGo vs Google: Privacy Comparison',
+          url: 'https://comparison.com/duckduckgo',
+          description: 'Detailed comparison between privacy-focused search engines and traditional search engines.',
+          domain: 'comparison.com'
+        }
+      ]);
+      setImageResults([
+        {
+          title: 'Privacy concept image',
+          url: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=400&h=300&fit=crop',
+          thumbnail: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=200&h=150&fit=crop'
+        },
+        {
+          title: 'Secure search illustration',
+          url: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=300&fit=crop',
+          thumbnail: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=200&h=150&fit=crop'
+        },
+        {
+          title: 'Data protection concept',
+          url: 'https://images.unsplash.com/photo-1526374965328-7f5ae4e8e49b?w=400&h=300&fit=crop',
+          thumbnail: 'https://images.unsplash.com/photo-1526374965328-7f5ae4e8e49b?w=200&h=150&fit=crop'
+        }
+      ]);
+      setNewsResults([
+        {
+          title: 'New Privacy Regulations Impact Search Engines',
+          url: 'https://news.org/privacy-regulations',
+          description: 'Latest regulations require search engines to improve privacy protections for users.',
+          source: 'Privacy News Daily',
+          publishedAt: new Date().toISOString()
+        },
+        {
+          title: 'Users Shift to Privacy-Focused Search Options',
+          url: 'https://news.org/user-shift',
+          description: 'Growing number of internet users switching to privacy-focused search engines for better data protection.',
+          source: 'Tech News Weekly',
+          publishedAt: new Date(Date.now() - 86400000).toISOString()
         }
       ]);
     } finally {
