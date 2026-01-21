@@ -1,1 +1,28 @@
-# Multi-stage build for React frontend\nFROM node:18-alpine AS frontend-build\nWORKDIR /app/frontend\nCOPY frontend/package*.json ./\nRUN npm ci --only=production\nCOPY frontend/ ./\nRUN npm run build\n\n# Backend with served frontend\nFROM node:18-alpine AS backend\nWORKDIR /app\n\n# Copy backend files\nCOPY backend/package*.json ./\nRUN npm ci --only=production\nCOPY backend/ ./\n\n# Copy built frontend\nCOPY --from=frontend-build /app/frontend/dist ./public\n\n# Create non-root user\nRUN addgroup -g 1001 -S nodejs\nRUN adduser -S nextjs -u 1001\nUSER nextjs\n\nEXPOSE 3001\n\nCMD [\"npm\", \"start\"]
+# Multi-stage build for React frontend
+FROM node:18-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+COPY frontend/ ./
+RUN npm run build
+
+# Backend with served frontend
+FROM node:18-alpine AS backend
+WORKDIR /app
+
+# Copy backend files
+COPY backend/package*.json ./
+RUN npm ci --only=production
+COPY backend/ ./
+
+# Copy built frontend
+COPY --from=frontend-build /app/frontend/dist ./public
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+USER nextjs
+
+EXPOSE 3001
+
+CMD ["npm", "start"]
