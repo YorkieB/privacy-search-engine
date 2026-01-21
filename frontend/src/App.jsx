@@ -8,20 +8,32 @@ import Header from './components/Header.jsx';
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
+  const [activeTab, setActiveTab] = useState('web');
 
   const handleSearch = (query) => {
     setSearchQuery(query);
     setShowResults(true);
+    setActiveTab('web');
   };
 
   const handleBackToHome = () => {
     setShowResults(false);
     setSearchQuery('');
+    setActiveTab('web');
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
   };
 
   return (
     <div className="App">
-      <Header onBackToHome={handleBackToHome} showBackButton={showResults} />
+      <Header 
+        onBackToHome={handleBackToHome} 
+        showBackButton={showResults}
+        onTabChange={handleTabChange}
+        activeTab={activeTab}
+      />
       
       {!showResults ? (
         <>
@@ -30,7 +42,7 @@ function App() {
           <DiscoverSection onSearch={handleSearch} />
         </>
       ) : (
-        <SearchResults query={searchQuery} onNewSearch={handleSearch} />
+        <SearchResults query={searchQuery} onNewSearch={handleSearch} activeTab={activeTab} onTabChange={handleTabChange} />
       )}
     </div>
   );

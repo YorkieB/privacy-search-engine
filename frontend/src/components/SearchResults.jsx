@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-function SearchResults({ query, onNewSearch }) {
-  const [activeTab, setActiveTab] = useState('web');
+function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChange }) {
+  const [activeTab, setActiveTab] = useState(propActiveTab || 'web');
   const [webResults, setWebResults] = useState([]);
   const [imageResults, setImageResults] = useState([]);
   const [newsResults, setNewsResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState(query);
+
+  // Update local activeTab when prop changes
+  useEffect(() => {
+    if (propActiveTab) {
+      setActiveTab(propActiveTab);
+    }
+  }, [propActiveTab]);
 
   useEffect(() => {
     if (query) {
@@ -142,19 +149,28 @@ function SearchResults({ query, onNewSearch }) {
           <div className="search-tabs">
             <button 
               className={`search-tab ${activeTab === 'web' ? 'active' : ''}`}
-              onClick={() => setActiveTab('web')}
+              onClick={() => {
+                setActiveTab('web');
+                if (onTabChange) onTabChange('web');
+              }}
             >
               Web
             </button>
             <button 
               className={`search-tab ${activeTab === 'images' ? 'active' : ''}`}
-              onClick={() => setActiveTab('images')}
+              onClick={() => {
+                setActiveTab('images');
+                if (onTabChange) onTabChange('images');
+              }}
             >
               Images
             </button>
             <button 
               className={`search-tab ${activeTab === 'news' ? 'active' : ''}`}
-              onClick={() => setActiveTab('news')}
+              onClick={() => {
+                setActiveTab('news');
+                if (onTabChange) onTabChange('news');
+              }}
             >
               News
             </button>
