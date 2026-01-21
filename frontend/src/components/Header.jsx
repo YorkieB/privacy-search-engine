@@ -1,9 +1,10 @@
 import React from 'react';
 
 function Header({ onBackToHome, showBackButton, onTabChange, activeTab }) {
-  const handleNavClick = (e, tab) => {
-    e.preventDefault();
+  const handleNavClick = (tab) => {
+    console.log('Nav clicked:', tab, 'activeTab:', activeTab, 'showBackButton:', showBackButton);
     if (showBackButton && onTabChange) {
+      console.log('Calling onTabChange with:', tab);
       onTabChange(tab);
     }
   };
@@ -22,23 +23,23 @@ function Header({ onBackToHome, showBackButton, onTabChange, activeTab }) {
         {showBackButton ? (
           <nav className="nav-links">
             <button 
-              onClick={(e) => handleNavClick(e, 'web')}
+              onClick={() => handleNavClick('web')}
               className={`nav-link ${activeTab === 'web' ? 'active' : ''}`}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               Web
             </button>
             <button 
-              onClick={(e) => handleNavClick(e, 'images')}
+              onClick={() => handleNavClick('images')}
               className={`nav-link ${activeTab === 'images' ? 'active' : ''}`}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               Images
             </button>
             <button 
-              onClick={(e) => handleNavClick(e, 'news')}
+              onClick={() => handleNavClick('news')}
               className={`nav-link ${activeTab === 'news' ? 'active' : ''}`}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               News
             </button>
