@@ -1,1 +1,71 @@
-import React from 'react';\n\nfunction DiscoverSection({ onSearch }) {\n  const discoverCards = [\n    {\n      id: 'main',\n      title: 'Explore Privacy-Focused Search',\n      subtitle: 'Fast, untracked web search',\n      image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&h=400&fit=crop',\n      size: 'large',\n      query: 'privacy technology'\n    },\n    {\n      id: 'tech',\n      title: 'Latest Technology',\n      subtitle: 'Innovation & breakthroughs',\n      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',\n      size: 'medium',\n      query: 'technology innovation'\n    },\n    {\n      id: 'science',\n      title: 'Science Discoveries',\n      subtitle: 'Research & findings',\n      image: 'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=300&h=200&fit=crop',\n      size: 'medium',\n      query: 'science discoveries'\n    },\n    {\n      id: 'nature',\n      title: 'Environmental News',\n      subtitle: 'Sustainability & conservation',\n      image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop',\n      size: 'medium',\n      query: 'environmental conservation'\n    },\n    {\n      id: 'health',\n      title: 'Health & Wellness',\n      subtitle: 'Medical breakthroughs',\n      image: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop',\n      size: 'medium',\n      query: 'health medical breakthrough'\n    }\n  ];\n\n  const handleCardClick = (card) => {\n    if (onSearch && card.query) {\n      onSearch(card.query);\n    }\n  };\n\n  return (\n    <section className=\"discover-section\">\n      <div className=\"discover-container\">\n        <h2 className=\"discover-title\">Discover</h2>\n        \n        <div className=\"discover-grid\">\n          {discoverCards.map((card) => (\n            <div \n              key={card.id}\n              className={`discover-card ${card.size}`}\n              onClick={() => handleCardClick(card)}\n            >\n              <img \n                src={card.image} \n                alt={card.title}\n                className=\"discover-card-image\"\n              />\n              <div className=\"discover-card-content\">\n                <h3 className=\"discover-card-title\">{card.title}</h3>\n                <p className=\"discover-card-subtitle\">{card.subtitle}</p>\n              </div>\n            </div>\n          ))}\n        </div>\n        \n        {/* Additional smaller cards row */}\n        <div className=\"discover-grid\">\n          <div \n            className=\"discover-card medium\"\n            onClick={() => handleCardClick({ query: 'space exploration' })}\n          >\n            <img \n              src=\"https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=300&h=200&fit=crop\" \n              alt=\"Space Exploration\"\n              className=\"discover-card-image\"\n            />\n            <div className=\"discover-card-content\">\n              <h3 className=\"discover-card-title\">Space Exploration</h3>\n              <p className=\"discover-card-subtitle\">Cosmic discoveries</p>\n            </div>\n          </div>\n          \n          <div \n            className=\"discover-card medium\"\n            onClick={() => handleCardClick({ query: 'renewable energy' })}\n          >\n            <img \n              src=\"https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=300&h=200&fit=crop\" \n              alt=\"Renewable Energy\"\n              className=\"discover-card-image\"\n            />\n            <div className=\"discover-card-content\">\n              <h3 className=\"discover-card-title\">Renewable Energy</h3>\n              <p className=\"discover-card-subtitle\">Clean power solutions</p>\n            </div>\n          </div>\n          \n          <div \n            className=\"discover-card medium\"\n            onClick={() => handleCardClick({ query: 'education technology' })}\n          >\n            <img \n              src=\"https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=300&h=200&fit=crop\" \n              alt=\"Education Technology\"\n              className=\"discover-card-image\"\n            />\n            <div className=\"discover-card-content\">\n              <h3 className=\"discover-card-title\">Education Tech</h3>\n              <p className=\"discover-card-subtitle\">Learning innovations</p>\n            </div>\n          </div>\n        </div>\n      </div>\n    </section>\n  );\n}\n\nexport default DiscoverSection;
+import React from 'react';
+
+function DiscoverSection() {
+  const discoverCards = [
+    {
+      id: 1,
+      title: "Privacy Matters",
+      subtitle: "Latest developments in digital privacy",
+      image: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?w=500&h=400&fit=crop",
+      size: "large"
+    },
+    {
+      id: 2,
+      title: "Technology News",
+      subtitle: "Breaking tech stories",
+      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop",
+      size: "medium"
+    },
+    {
+      id: 3,
+      title: "Security Updates",
+      subtitle: "Stay protected online",
+      image: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=300&h=200&fit=crop",
+      size: "medium"
+    },
+    {
+      id: 4,
+      title: "Science",
+      subtitle: "Latest discoveries",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop",
+      size: "medium"
+    },
+    {
+      id: 5,
+      title: "Environment",
+      subtitle: "Green initiatives",
+      image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop",
+      size: "medium"
+    }
+  ];
+
+  return (
+    <section className="discover-section">
+      <div className="discover-container">
+        <h2 className="discover-title">Discover</h2>
+        
+        <div className="discover-grid">
+          {discoverCards.map((card) => (
+            <div 
+              key={card.id} 
+              className={`discover-card ${card.size}`}
+              onClick={() => window.open(`/?q=${encodeURIComponent(card.title)}`, '_blank')}
+            >
+              <img 
+                src={card.image} 
+                alt={card.title} 
+                className="discover-card-image"
+              />
+              <div className="discover-card-content">
+                <h3 className="discover-card-title">{card.title}</h3>
+                <p className="discover-card-subtitle">{card.subtitle}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default DiscoverSection;

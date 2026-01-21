@@ -1,1 +1,194 @@
-import React, { useState, useEffect } from 'react';\n\nfunction SearchResults({ query, onNewSearch }) {\n  const [activeTab, setActiveTab] = useState('web');\n  const [webResults, setWebResults] = useState([]);\n  const [imageResults, setImageResults] = useState([]);\n  const [newsResults, setNewsResults] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [searchQuery, setSearchQuery] = useState(query);\n\n  useEffect(() => {\n    if (query) {\n      setSearchQuery(query);\n      fetchResults(query);\n    }\n  }, [query]);\n\n  const fetchResults = async (searchTerm) => {\n    setLoading(true);\n    try {\n      // Fetch all three types of results\n      const [webResponse, imageResponse, newsResponse] = await Promise.all([\n        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`),\n        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}`),\n        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}`)\n      ]);\n\n      const [webData, imageData, newsData] = await Promise.all([\n        webResponse.json(),\n        imageResponse.json(), \n        newsResponse.json()\n      ]);\n\n      setWebResults(webData.results || []);\n      setImageResults(imageData.results || []);\n      setNewsResults(newsData.results || []);\n    } catch (error) {\n      console.error('Error fetching search results:', error);\n      // Set mock data for demonstration\n      setWebResults([\n        {\n          title: 'Privacy Search - Secure Web Search',\n          url: 'https://example.com',\n          description: 'A privacy-focused search engine that does not track users or store personal information.',\n          domain: 'example.com'\n        },\n        {\n          title: 'How to Search the Web Privately',\n          url: 'https://guide.com',\n          description: 'Learn about privacy-focused search engines and techniques to search the web without being tracked.',\n          domain: 'guide.com'\n        }\n      ]);\n    } finally {\n      setLoading(false);\n    }\n  };\n\n  const handleSearch = (e) => {\n    e.preventDefault();\n    if (searchQuery.trim()) {\n      onNewSearch(searchQuery.trim());\n    }\n  };\n\n  const renderWebResults = () => {\n    if (loading) return <div className=\"loading\">Searching...</div>;\n    if (!webResults.length) return <div className=\"loading\">No results found</div>;\n\n    return webResults.map((result, index) => (\n      <div key={index} className=\"web-result\">\n        <div className=\"web-result-url\">{result.domain || new URL(result.url).hostname}</div>\n        <a href={result.url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"web-result-title\">\n          {result.title}\n        </a>\n        <p className=\"web-result-description\">{result.description}</p>\n      </div>\n    ));\n  };\n\n  const renderImageResults = () => {\n    if (loading) return <div className=\"loading\">Loading images...</div>;\n    if (!imageResults.length) return <div className=\"loading\">No images found</div>;\n\n    return (\n      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>\n        {imageResults.map((image, index) => (\n          <div key={index} style={{ borderRadius: '8px', overflow: 'hidden' }}>\n            <img \n              src={image.thumbnail || image.url} \n              alt={image.title}\n              style={{ width: '100%', height: '150px', objectFit: 'cover' }}\n              onClick={() => window.open(image.url, '_blank')}\n            />\n          </div>\n        ))}\n      </div>\n    );\n  };\n\n  const renderNewsResults = () => {\n    if (loading) return <div className=\"loading\">Loading news...</div>;\n    if (!newsResults.length) return <div className=\"loading\">No news found</div>;\n\n    return newsResults.map((article, index) => (\n      <div key={index} className=\"web-result\">\n        <div className=\"web-result-url\">{article.source}</div>\n        <a href={article.url} target=\"_blank\" rel=\"noopener noreferrer\" className=\"web-result-title\">\n          {article.title}\n        </a>\n        <p className=\"web-result-description\">{article.description}</p>\n        {article.publishedAt && (\n          <div style={{ color: '#666', fontSize: '12px', marginTop: '5px' }}>\n            {new Date(article.publishedAt).toLocaleDateString()}\n          </div>\n        )}\n      </div>\n    ));\n  };\n\n  return (\n    <div className=\"search-results-page\">\n      <div className=\"search-header\">\n        <div className=\"search-header-container\">\n          <form className=\"compact-search-box\" onSubmit={handleSearch}>\n            <input\n              type=\"text\"\n              className=\"compact-search-input\"\n              value={searchQuery}\n              onChange={(e) => setSearchQuery(e.target.value)}\n              placeholder=\"Search...\"\n            />\n            <button type=\"submit\" className=\"search-button\">\n              🔍\n            </button>\n          </form>\n        </div>\n      </div>\n\n      <div className=\"search-results-container\">\n        <div className=\"main-results\">\n          <div className=\"search-tabs\">\n            <button \n              className={`search-tab ${activeTab === 'web' ? 'active' : ''}`}\n              onClick={() => setActiveTab('web')}\n            >\n              Web\n            </button>\n            <button \n              className={`search-tab ${activeTab === 'images' ? 'active' : ''}`}\n              onClick={() => setActiveTab('images')}\n            >\n              Images\n            </button>\n            <button \n              className={`search-tab ${activeTab === 'news' ? 'active' : ''}`}\n              onClick={() => setActiveTab('news')}\n            >\n              News\n            </button>\n          </div>\n\n          <div className=\"results-content\">\n            {activeTab === 'web' && renderWebResults()}\n            {activeTab === 'images' && renderImageResults()}\n            {activeTab === 'news' && renderNewsResults()}\n          </div>\n        </div>\n\n        <div className=\"sidebar\">\n          <div className=\"sidebar-widget\">\n            <h3 className=\"widget-title\">Search Tips</h3>\n            <ul style={{ listStyle: 'none', padding: 0, color: '#666' }}>\n              <li style={{ marginBottom: '10px' }}>• Use quotes for exact phrases</li>\n              <li style={{ marginBottom: '10px' }}>• Add + before important terms</li>\n              <li style={{ marginBottom: '10px' }}>• Use - to exclude terms</li>\n              <li style={{ marginBottom: '10px' }}>• Try different keywords</li>\n            </ul>\n          </div>\n          \n          <div className=\"sidebar-widget\">\n            <h3 className=\"widget-title\">Privacy Info</h3>\n            <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.4' }}>\n              Your searches are not tracked, stored, or shared. We use Brave Search API \n              to provide results while protecting your privacy.\n            </p>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n}\n\nexport default SearchResults;
+import React, { useState, useEffect } from 'react';
+
+function SearchResults({ query, onNewSearch }) {
+  const [activeTab, setActiveTab] = useState('web');
+  const [webResults, setWebResults] = useState([]);
+  const [imageResults, setImageResults] = useState([]);
+  const [newsResults, setNewsResults] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(query);
+
+  useEffect(() => {
+    if (query) {
+      setSearchQuery(query);
+      fetchResults(query);
+    }
+  }, [query]);
+
+  const fetchResults = async (searchTerm) => {
+    setLoading(true);
+    try {
+      // Fetch all three types of results
+      const [webResponse, imageResponse, newsResponse] = await Promise.all([
+        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`),
+        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}`),
+        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}`)
+      ]);
+
+      const [webData, imageData, newsData] = await Promise.all([
+        webResponse.json(),
+        imageResponse.json(), 
+        newsResponse.json()
+      ]);
+
+      setWebResults(webData.results || []);
+      setImageResults(imageData.results || []);
+      setNewsResults(newsData.results || []);
+    } catch (error) {
+      console.error('Error fetching search results:', error);
+      // Set mock data for demonstration
+      setWebResults([
+        {
+          title: 'Privacy Search - Secure Web Search',
+          url: 'https://example.com',
+          description: 'A privacy-focused search engine that does not track users or store personal information.',
+          domain: 'example.com'
+        },
+        {
+          title: 'How to Search the Web Privately',
+          url: 'https://guide.com',
+          description: 'Learn about privacy-focused search engines and techniques to search the web without being tracked.',
+          domain: 'guide.com'
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      onNewSearch(searchQuery.trim());
+    }
+  };
+
+  const renderWebResults = () => {
+    if (loading) return <div className="loading">Searching...</div>;
+    if (!webResults.length) return <div className="loading">No results found</div>;
+
+    return webResults.map((result, index) => (
+      <div key={index} className="web-result">
+        <div className="web-result-url">{result.domain || new URL(result.url).hostname}</div>
+        <a href={result.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
+          {result.title}
+        </a>
+        <p className="web-result-description">{result.description}</p>
+      </div>
+    ));
+  };
+
+  const renderImageResults = () => {
+    if (loading) return <div className="loading">Loading images...</div>;
+    if (!imageResults.length) return <div className="loading">No images found</div>;
+
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+        {imageResults.map((image, index) => (
+          <div key={index} style={{ borderRadius: '8px', overflow: 'hidden' }}>
+            <img 
+              src={image.thumbnail || image.url} 
+              alt={image.title}
+              style={{ width: '100%', height: '150px', objectFit: 'cover' }}
+              onClick={() => window.open(image.url, '_blank')}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderNewsResults = () => {
+    if (loading) return <div className="loading">Loading news...</div>;
+    if (!newsResults.length) return <div className="loading">No news found</div>;
+
+    return newsResults.map((article, index) => (
+      <div key={index} className="web-result">
+        <div className="web-result-url">{article.source}</div>
+        <a href={article.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
+          {article.title}
+        </a>
+        <p className="web-result-description">{article.description}</p>
+        {article.publishedAt && (
+          <div style={{ color: '#666', fontSize: '12px', marginTop: '5px' }}>
+            {new Date(article.publishedAt).toLocaleDateString()}
+          </div>
+        )}
+      </div>
+    ));
+  };
+
+  return (
+    <div className="search-results-page">
+      <div className="search-header">
+        <div className="search-header-container">
+          <form className="compact-search-box" onSubmit={handleSearch}>
+            <input
+              type="text"
+              className="compact-search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search..."
+            />
+            <button type="submit" className="search-button">
+              🔍
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className="search-results-container">
+        <div className="main-results">
+          <div className="search-tabs">
+            <button 
+              className={`search-tab ${activeTab === 'web' ? 'active' : ''}`}
+              onClick={() => setActiveTab('web')}
+            >
+              Web
+            </button>
+            <button 
+              className={`search-tab ${activeTab === 'images' ? 'active' : ''}`}
+              onClick={() => setActiveTab('images')}
+            >
+              Images
+            </button>
+            <button 
+              className={`search-tab ${activeTab === 'news' ? 'active' : ''}`}
+              onClick={() => setActiveTab('news')}
+            >
+              News
+            </button>
+          </div>
+
+          <div className="results-content">
+            {activeTab === 'web' && renderWebResults()}
+            {activeTab === 'images' && renderImageResults()}
+            {activeTab === 'news' && renderNewsResults()}
+          </div>
+        </div>
+
+        <div className="sidebar">
+          <div className="sidebar-widget">
+            <h3 className="widget-title">Search Tips</h3>
+            <ul style={{ listStyle: 'none', padding: 0, color: '#666' }}>
+              <li style={{ marginBottom: '10px' }}>• Use quotes for exact phrases</li>
+              <li style={{ marginBottom: '10px' }}>• Add + before important terms</li>
+              <li style={{ marginBottom: '10px' }}>• Use - to exclude terms</li>
+              <li style={{ marginBottom: '10px' }}>• Try different keywords</li>
+            </ul>
+          </div>
+          
+          <div className="sidebar-widget">
+            <h3 className="widget-title">Privacy Info</h3>
+            <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.4' }}>
+              Your searches are not tracked, stored, or shared. We use Brave Search API 
+              to provide results while protecting your privacy.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default SearchResults;
