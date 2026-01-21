@@ -12,9 +12,13 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Security middleware - disable HSTS and problematic security headers for HTTP
+// Security middleware - HSTS enabled for HTTPS
 app.use(helmet({
-  hsts: false,
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
   crossOriginOpenerPolicy: false,
