@@ -1,6 +1,6 @@
 import Sentiment from 'sentiment';
 import vader from 'vader-sentiment';
-import afinn from 'afinn-165' with { type: 'json' };
+import afinn from 'afinn-165' assert { type: 'json' };
 import config from '../config/index.js';
 
 /**

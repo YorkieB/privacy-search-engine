@@ -169,7 +169,13 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
 
     return pageResults.map((result, index) => (
       <div key={index} className="web-result">
-        <div className="web-result-url">{result.domain || (result.url && new URL(result.url).hostname) || 'unknown'}</div>
+        <div className="web-result-url">{result.domain || (result.url && (() => {
+          try {
+            return new URL(result.url).hostname;
+          } catch {
+            return 'unknown';
+          }
+        })()) || 'unknown'}</div>
         <a href={result.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
           {result.title}
         </a>
