@@ -1,6 +1,6 @@
 import React from 'react';
 
-function DiscoverSection() {
+function DiscoverSection({ onSearch }) {
   const discoverCards = [
     {
       id: 1,
@@ -46,10 +46,11 @@ function DiscoverSection() {
         
         <div className="discover-grid">
           {discoverCards.map((card) => (
-            <div 
-              key={card.id} 
+            <div
+              key={card.id}
               className={`discover-card ${card.size}`}
-              onClick={() => window.open(`/?q=${encodeURIComponent(card.title)}`, '_blank')}
+              onClick={() => onSearch && onSearch(card.title)}
+              style={{ cursor: 'pointer' }}
             >
               <img 
                 src={card.image} 

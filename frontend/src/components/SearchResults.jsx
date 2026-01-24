@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChange }) {
   const [activeTab, setActiveTab] = useState(propActiveTab || 'web');
@@ -9,6 +9,7 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
   const [searchQuery, setSearchQuery] = useState(query);
   const [currentPage, setCurrentPage] = useState(1);
   const resultsPerPage = 10;
+  const abortControllerRef = useRef(null);
 
   // Update local activeTab when prop changes and reset to page 1
   useEffect(() => {
@@ -24,6 +25,13 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
       setCurrentPage(1);
       fetchResults(query);
     }
+
+    // Cleanup: abort pending requests on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [query]);
 
   const getPageResults = () => {
@@ -54,13 +62,22 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
   };
 
   const fetchResults = async (searchTerm) => {
+    // Abort previous request if exists
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
+
     setLoading(true);
     try {
       // Fetch all three types of results with count parameter for more results
       const [webResponse, imageResponse, newsResponse] = await Promise.all([
-        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}&count=20`),
-        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}&count=20`),
-        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}&count=20`)
+        fetch(`/api/search?q=${encodeURIComponent(searchTerm)}&count=20`, { signal }),
+        fetch(`/api/images?q=${encodeURIComponent(searchTerm)}&count=20`, { signal }),
+        fetch(`/api/news?q=${encodeURIComponent(searchTerm)}&count=20`, { signal })
       ]);
 
       console.log('Web response status:', webResponse.status);
@@ -81,6 +98,11 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
       setImageResults(imageData.results || imageData || []);
       setNewsResults(newsData.results || newsData || []);
     } catch (error) {
+      // Don't log error if request was aborted
+      if (error.name === 'AbortError') {
+        console.log('Search request was cancelled');
+        return;
+      }
       console.error('Error fetching search results:', error);
       // Provide more realistic mock data for demonstration
       setWebResults([
@@ -169,11 +191,17 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
 
     return pageResults.map((result, index) => (
       <div key={index} className="web-result">
-        <div className="web-result-url">{result.domain || (result.url && new URL(result.url).hostname) || 'unknown'}</div>
+        <div className="web-result-url">{result.domain || (result.url && (() => {
+          try {
+            return new URL(result.url).hostname;
+          } catch {
+            return 'unknown';
+          }
+        })()) || 'unknown'}</div>
         <a href={result.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
           {result.title}
         </a>
-        <p className="web-result-description">{result.description}</p>
+        <p className="web-result-description">{result.snippet || result.description}</p>
       </div>
     ));
   };
@@ -214,7 +242,7 @@ function SearchResults({ query, onNewSearch, activeTab: propActiveTab, onTabChan
         <a href={article.url} target="_blank" rel="noopener noreferrer" className="web-result-title">
           {article.title}
         </a>
-        <p className="web-result-description">{article.description}</p>
+        <p className="web-result-description">{article.snippet || article.description}</p>
         {article.publishedAt && (
           <div style={{ color: '#666', fontSize: '12px', marginTop: '5px' }}>
             {new Date(article.publishedAt).toLocaleDateString()}

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 const SearchForm = ({ onSearch, loading, placeholder = "Search..." }) => {
   const [query, setQuery] = useState('');
+  const searchId = useId();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,11 +15,11 @@ const SearchForm = ({ onSearch, loading, placeholder = "Search..." }) => {
 
   return (
     <form onSubmit={handleSubmit} className="search-form" role="search">
-      <label htmlFor={`search-${Date.now()}`} className="visually-hidden">
+      <label htmlFor={searchId} className="visually-hidden">
         {placeholder}
       </label>
       <input
-        id={`search-${Date.now()}`}
+        id={searchId}
         type="search"
         value={query}
         onChange={handleInputChange}
