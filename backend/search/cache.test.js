@@ -1,14 +1,7 @@
-import CacheService from './cache.js';
+// Note: With ES modules, we need to import before we can test
+// The cache service will use the actual config, which is fine for these tests
 
-// Mock the config
-jest.mock('../config/index.js', () => ({
-  default: {
-    cache: {
-      ttlSeconds: 300,
-      maxEntries: 100
-    }
-  }
-}));
+import CacheService from './cache.js';
 
 describe('CacheService', () => {
   beforeEach(() => {

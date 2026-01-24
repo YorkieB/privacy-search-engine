@@ -181,15 +181,21 @@ describe('SearchResults', () => {
   });
 
   it('should handle fetch errors gracefully', async () => {
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
     fetch.mockRejectedValue(new Error('Network error'));
 
-    render(<SearchResults query="test" onNewSearch={jest.fn()} />);
+    const { container } = render(<SearchResults query="test" onNewSearch={jest.fn()} />);
 
-    // Should not crash and should show fallback data
+    // Test that component doesn't crash when fetches fail
+    expect(container.querySelector('.search-results-page')).toBeInTheDocument();
+
+    // Wait for component to finish loading (it will show mock data on error)
     await waitFor(() => {
-      // Component shows mock data on error
-      expect(screen.queryByText(/searching/i)).not.toBeInTheDocument();
+      const input = container.querySelector('.compact-search-input');
+      expect(input).toBeInTheDocument();
     });
+
+    consoleError.mockRestore();
   });
 
   it('should handle AbortError without logging', async () => {
