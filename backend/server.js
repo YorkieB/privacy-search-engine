@@ -36,7 +36,16 @@ app.use((req, res, next) => {
 
 // CORS configuration
 app.use(cors({
-  origin: config.allowedOrigin,
+  // [SovereignBrowser] A page loaded from file:// sends `Origin: null`, which
+  // never matches a configured http origin. Permit it explicitly, alongside
+  // requests with no Origin header. Safe here: binds locally, no credentials,
+  // read-only search endpoints only.
+  origin: (origin, callback) => {
+    if (!origin || origin === 'null' || origin === config.allowedOrigin) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origin not allowed by CORS: ${origin}`));
+  },
   methods: ['GET', 'POST'],
   credentials: false
 }));

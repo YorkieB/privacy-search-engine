@@ -170,6 +170,9 @@ class BraveSearchService {
         url: result.url,
         snippet: result.description,
         published: result.age,
+        publishedAt: result.page_age,
+        thumbnail: result.thumbnail?.src || null,
+        favicon: result.meta_url?.favicon || null,
         source: result.meta_url?.hostname,
         domain: this.extractDomain(result.url)
       })),
@@ -194,3 +197,4 @@ class BraveSearchService {
 }
 
 export default new BraveSearchService();
+

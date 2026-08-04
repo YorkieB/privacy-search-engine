@@ -4,7 +4,15 @@ dotenvConfig();
 
 const config = {
   port: process.env.PORT || 3001,
-  braveApiKey: process.env.BRAVE_API_KEY,
+  // [SovereignBrowser] Each Brave subscription issues its own token, so keys
+  // are held per plan. BRAVE_API_KEY remains supported as a single-key
+  // fallback so existing setups keep working.
+  braveApiKey: process.env.BRAVE_SEARCH_KEY || process.env.BRAVE_API_KEY,
+  braveKeys: {
+    search: process.env.BRAVE_SEARCH_KEY || process.env.BRAVE_API_KEY,
+    autosuggest: process.env.BRAVE_AUTOSUGGEST_KEY || process.env.BRAVE_API_KEY,
+    pro: process.env.BRAVE_PRO_KEY || null
+  },
   allowedOrigin: process.env.ORIGIN || '*',
   environment: process.env.NODE_ENV || 'development',
   cache: {
