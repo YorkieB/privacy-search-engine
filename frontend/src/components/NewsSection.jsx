@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SearchForm from './SearchForm.jsx';
 import LoadingState from './LoadingState.jsx';
 import ErrorMessage from './ErrorMessage.jsx';
@@ -11,34 +11,9 @@ const NewsSection = () => {
   const [lastQuery, setLastQuery] = useState('');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(5 * 60 * 1000); // 5 minutes default
-  const [refreshTimer, setRefreshTimer] = useState(null);
+  const refreshTimerRef = useRef(null);
 
-  // Load positive news on component mount
-  useEffect(() => {
-    handleSearch('');
-  }, []);
-
-  // Handle auto-refresh
-  useEffect(() => {
-    if (autoRefresh && refreshInterval > 0) {
-      const timer = setInterval(() => {
-        handleSearch(lastQuery);
-      }, refreshInterval);
-      
-      setRefreshTimer(timer);
-      
-      return () => {
-        if (timer) clearInterval(timer);
-      };
-    } else {
-      if (refreshTimer) {
-        clearInterval(refreshTimer);
-        setRefreshTimer(null);
-      }
-    }
-  }, [autoRefresh, refreshInterval, lastQuery]);
-
-  const handleSearch = async (query) => {
+  const handleSearch = useCallback(async (query) => {
     setLoading(true);
     setError(null);
     setLastQuery(query || '');
@@ -59,7 +34,36 @@ const NewsSection = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Load positive news on component mount
+  useEffect(() => {
+    handleSearch('');
+  }, [handleSearch]);
+
+  // Handle auto-refresh
+  useEffect(() => {
+    // Clear any existing timer
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+
+    // Set up new timer if auto-refresh is enabled
+    if (autoRefresh && refreshInterval > 0) {
+      refreshTimerRef.current = setInterval(() => {
+        handleSearch(lastQuery);
+      }, refreshInterval);
+    }
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+    };
+  }, [autoRefresh, refreshInterval, lastQuery, handleSearch]);
 
   const handleRefreshSettingsChange = (enabled, interval) => {
     setAutoRefresh(enabled);

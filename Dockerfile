@@ -20,8 +20,8 @@ COPY --from=frontend-build /app/frontend/dist ./public
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-USER nextjs
+RUN adduser -S nodejs -u 1001
+USER nodejs
 
 EXPOSE 3001
 
